@@ -2,7 +2,7 @@
 
 require 'optparse'
 require 'fileutils'
-require 'goodbye_chatwork'
+require '../lib/goodbye_chatwork'
 
 opts = ARGV.getopts('i:p:e:x:d:h')
 email = opts['i']
@@ -44,6 +44,7 @@ export all room's chat logs (-x: chat logs and attachment files)
 end
 
 gcw = GoodbyeChatwork::Client.new(email, password, verbose: true)
+=begin
 gcw.login
 list = gcw.room_list
 if opts['x'] || opts['e']
@@ -77,3 +78,12 @@ if opts['x'] || opts['e']
 else
   puts list.map { |i| i.join(' ') }
 end
+=end
+
+
+log_dir = opts['d'] || 'chatwork_logs'
+room_id=64654741
+room_name="HC"
+out = File.join(log_dir, "#{room_id}_#{room_name}.csv")
+gcw.export_csv(room_id, out)
+

@@ -36,7 +36,8 @@ module GoodbyeChatwork
       r = @client.get "/"
       self.wait
       self.info "login as #{@id} ..."
-      @token = r.body.match(/var ACCESS_TOKEN *= *'(.+)'/).to_a[1]
+      #@token = r.body.match(/var ACCESS_TOKEN *= *'(.+)'/).to_a[1]
+      @token = "79c580b41c1ea07e5ff48ef98bbf8032"
       @myid = r.body.match(/var MYID *= *'(.+)'/).to_a[1]
       raise 'no token' unless @token
       self.init_load
@@ -74,8 +75,21 @@ module GoodbyeChatwork
       r['result']['chat_list'].sort_by { |i| i['id'].to_i }.reverse
     end
 
+    def old_chat_file room_id, first_chat_id = 0
+      self.info "get old chat file #{first_chat_id}- ..."
+      res=""
+      File.open("/home/hikichi/goodbye_chatwork/HC_HW.txt", mode = "rt"){|f|
+        f.each_line{|line|
+          res = line
+        }
+      }
+      r = JSON.parse(res)
+      #r['result']['chat_list'].sort_by { |i| i['id'].to_i }.reverse      
+    end
+
     def account(aid)
-      @contacts[aid.to_s]
+      #@contacts[aid.to_s]
+      nil
     end
 
     def file_download(file_id, opt = {})
@@ -115,8 +129,8 @@ module GoodbyeChatwork
       self.info "export logs #{room_id} ..."
       CSV.open(out, "wb") do |csv|
         fid = 0
-        loop do
-          r = self.old_chat(room_id, fid)
+#        loop do
+          r = self.old_chat_file(room_id, fid)
           r.each do |i|
             if opt[:include_file]
               fid = i['msg'].match(/\[download\:([^\]]+)\]/).to_a[1]
@@ -129,12 +143,13 @@ module GoodbyeChatwork
               end
             end
             ac = self.account(i['aid'])
+            #print "#{ac}  #{i['aid']}\n"
             csv << [Time.at(i['tm']).iso8601,
               (ac ? ac['name'] : i['aid']), i['msg']]
           end
-          break if r.size < CHAT_SIZE
-          fid = r.last['id']
-        end
+ #         break if r.size < CHAT_SIZE
+ #         fid = r.last['id']
+ #       end
       end
       self.info "create #{out}"
     end
